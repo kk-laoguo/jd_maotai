@@ -130,7 +130,8 @@ def open_image(image_file):
                 #webbrowser.open("http://www.baidu.com")
                 os.system("python3 -mwebbrowser " + "./image.html")
         else:
-            os.system("open " + image_file)  # for Mac
+            #os.system("open " + image_file)  # for Mac
+            os.system("python3 -mwebbrowser " + "./image.html")
 
 def check_login(func):
     """用户登陆态校验装饰器。若用户未登陆，则调用扫码登陆"""

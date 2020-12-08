@@ -17,6 +17,7 @@ class Timer(object):
         url = 'https://a.jd.com//ajax/queryServerData.html'
         ret = requests.get(url).text
         js = json.loads(ret)
+        #logger.info('get jd time:'+ret)
         return float(js.get('serverTime')/1000)
 
     def start(self):
