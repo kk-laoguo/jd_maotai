@@ -1,6 +1,6 @@
 import sys
 from jd_mask_spider_requests import Jd_Mask_Spider
-
+import platform
 
 if __name__ == '__main__':
     a = """

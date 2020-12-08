@@ -5,6 +5,7 @@ from config import global_config
 from lxml import etree
 import os
 import functools
+import platform
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36",
@@ -119,6 +120,16 @@ def save_image(resp, image_file):
             f.write(chunk)
 
 def open_image(image_file):
+    """
+    sysstr = platform.system()
+    print(sysstr)
+    if(sysstr =="Windows"):
+        print ("Call Windows tasks")
+    elif(sysstr == "Linux"):
+        print ("Call Linux tasks")
+    else:
+        print ("Other System tasks")
+    """
     if os.name == "nt":
         os.system('start ' + image_file)  # for Windows
     else:

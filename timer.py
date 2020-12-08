@@ -24,8 +24,9 @@ class Timer(object):
         logger.info('正在等待到达设定时间:%s' % self.buy_time)
         now_time_local = datetime.now
         while True:
-            now_time = datetime.fromtimestamp(self.getTime())
-            if now_time >= self.buy_time or now_time_local() >= self.buy_time :
+            #now_time = datetime.fromtimestamp(self.getTime())
+            #if now_time >= self.buy_time or now_time_local() >= self.buy_time :
+            if now_time_local() >= self.buy_time :
                 logger.info('时间到达，开始执行……')
                 break
             else:
