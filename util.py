@@ -6,6 +6,7 @@ from lxml import etree
 import os
 import functools
 import platform
+from jdlogger import logger
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36",
@@ -61,9 +62,18 @@ USER_AGENTS = [
     ]
 
 def parse_json(s):
-    begin = s.find('{')
-    end = s.rfind('}') + 1
-    return json.loads(s[begin:end])
+    try:
+        begin = s.find('{')
+        end = s.rfind('}') + 1
+        return json.loads(s[begin:end])
+    except Exception as e:
+        logger.error('parse_json error '+e)
+        logger.info('resp json string:'+s)
+    try:
+        return json.loads(s)
+    except Exception as ex:
+        logger.error('parse_json error '+ex)
+        logger.info('resp json string:'+s)
 
 def get_random_useragent():
     """生成随机的UserAgent

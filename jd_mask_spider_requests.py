@@ -329,8 +329,8 @@ class Jd_Mask_Spider(object):
                 logger.info("抢购链接获取成功: %s", seckill_url)
                 return seckill_url
             else:
-                logger.info("抢购链接获取失败，%s不是抢购商品或抢购页面暂未刷新，0.0001秒后重试")
-                time.sleep(0.0001)
+                logger.info("抢购链接获取失败，%s不是抢购商品或抢购页面暂未刷新，0.1秒后重试")
+                time.sleep(0.1)
 
     def request_seckill_url(self):
         """访问商品的抢购链接（用于设置cookie等"""
@@ -366,11 +366,11 @@ class Jd_Mask_Spider(object):
         }
         self.session.get(url=url, params=payload, headers=headers, allow_redirects=False)
 
-    def _get_seckill_init_info(self):
+    def _get_seckill_init_info(self,times):
         """获取秒杀初始化信息（包括：地址，发票，token）
         :return: 初始化信息组成的dict
         """
-        logger.info('获取秒杀初始化信息...')
+        logger.info('获取秒杀初始化信息{}...'.format(times))
         url = 'https://marathon.jd.com/seckillnew/orderService/pc/init.action'
         data = {
             'sku': self.sku_id,
@@ -382,6 +382,7 @@ class Jd_Mask_Spider(object):
             'Host': 'marathon.jd.com',
         }
         resp = self.session.post(url=url, data=data, headers=headers)
+        logger.info('获取秒杀初始化信息 respText:'+resp.text)
         return parse_json(resp.text)
 
     def _get_seckill_order_data(self):
@@ -390,7 +391,12 @@ class Jd_Mask_Spider(object):
         """
         logger.info('生成提交抢购订单所需参数...')
         # 获取用户秒杀初始化信息
-        self.seckill_init_info[self.sku_id] = self._get_seckill_init_info()
+        for retry in range(0,3):
+            try:
+                self.seckill_init_info[self.sku_id] = self._get_seckill_init_info(retry)
+                break
+            except Exception as e:
+                print('获取用户秒杀初始化信息失败正在重试...'+e)
         init_info = self.seckill_init_info.get(self.sku_id)
         default_address = init_info['addressList'][0]  # 默认地址dict
         invoice_info = init_info.get('invoiceInfo', {})  # 默认发票信息dict, 有可能不返回

@@ -22,10 +22,10 @@ if __name__ == '__main__':
         start_tool.make_reserve()
     elif choice_function == '2':
         start_tool.login_by_QRcode()
+        start_tool.request_seckill_url()
+        start_tool.request_seckill_checkout_page()
         while True:
             try:
-                start_tool.request_seckill_url()
-                start_tool.request_seckill_checkout_page()
                 seckill_order=start_tool.submit_seckill_order()
                 if seckill_order == True:
                     break
