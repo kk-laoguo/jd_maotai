@@ -354,7 +354,7 @@ class JdMaskSpider(object):
         self.session.get(url=url, params=payload,
                          headers=headers, allow_redirects=False)
 
-    def _get_seckill_init_info(self):
+    def _get_seckill_init_info(self,times):
         """获取秒杀初始化信息（包括：地址，发票，token）
         :return: 初始化信息组成的dict
         """
