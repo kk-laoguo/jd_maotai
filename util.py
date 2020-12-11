@@ -1,11 +1,17 @@
-import json
-import random
-import requests
-from config import global_config
-from lxml import etree
-import os
+#!/usr/bin/env python3
+
+# -*- coding: utf-8 -*-
+
 import functools
+import json
+import os
 import platform
+import random
+
+import requests
+
+from config import global_config
+from jdlogger import logger
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36",
@@ -58,12 +64,22 @@ USER_AGENTS = [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1309.0 Safari/537.17",
     "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.15 (KHTML, like Gecko) Chrome/24.0.1295.0 Safari/537.15",
     "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.14 (KHTML, like Gecko) Chrome/24.0.1292.0 Safari/537.14"
-    ]
+]
 
-def parse_json(s):
-    begin = s.find('{')
-    end = s.rfind('}') + 1
-    return json.loads(s[begin:end])
+
+def parse_json(text):
+    try:
+        begin = text.find('{')
+        end = text.rfind('}') + 1
+        return json.loads(text[begin:end])
+    except Exception as e:
+        logger.error('parse_json error:{0}'.format(e))
+        try:
+            return json.loads(text)
+        except Exception as ex:
+            logger.error('parse_json error:{0}'.format(ex))
+            logger.info('resp json string:' + text)
+            return None
 
 def get_random_useragent():
     """生成随机的UserAgent
@@ -71,16 +87,19 @@ def get_random_useragent():
     """
     return random.choice(USER_AGENTS)
 
+
 def get_cookies():
     """解析cookies内容并添加到cookiesJar"""
     manual_cookies = {}
-    for item in global_config.getRaw('config','cookies_String').split(';'):
+    for item in global_config.getRaw('config', 'cookies_String').split(';'):
         name, value = item.strip().split('=', 1)
         # 用=号分割，分割1次
         manual_cookies[name] = value
         # 为字典cookies添加内容
-    cookiesJar = requests.utils.cookiejar_from_dict(manual_cookies, cookiejar=None, overwrite=True)
+    cookiesJar = requests.utils.cookiejar_from_dict(
+        manual_cookies, cookiejar=None, overwrite=True)
     return cookiesJar
+
 
 def get_session():
     # 初始化session
@@ -96,53 +115,36 @@ def get_session():
     # session.cookies = get_cookies()
     return session
 
+
 def send_wechat(message):
     """推送信息到微信"""
-    url = 'http://sc.ftqq.com/{}.send'.format(global_config.getRaw('messenger', 'sckey'))
+    url = 'http://sc.ftqq.com/{}.send'.format(
+        global_config.getRaw('messenger', 'sckey'))
     payload = {
-        "text":'抢购结果',
+        "text": '抢购结果',
         "desp": message
     }
     headers = {
-        'User-Agent':global_config.getRaw('config', 'DEFAULT_USER_AGENT')
+        'User-Agent': global_config.getRaw('config', 'DEFAULT_USER_AGENT')
     }
     requests.get(url, params=payload, headers=headers)
 
-def response_status(resp):
-    if resp.status_code != requests.codes.OK:
-        print('Status: %u, Url: %s' % (resp.status_code, resp.url))
-        return False
-    return True
 
 def save_image(resp, image_file):
     with open(image_file, 'wb') as f:
         for chunk in resp.iter_content(chunk_size=1024):
             f.write(chunk)
 
+
 def open_image(image_file):
-    """
-    sysstr = platform.system()
-    print(sysstr)
-    if(sysstr =="Windows"):
-        print ("Call Windows tasks")
-    elif(sysstr == "Linux"):
-        print ("Call Linux tasks")
+    system = platform.system()
+    if system == "Windows":
+        os.system('start ' + image_file)
+    elif system == "Linux":
+        os.system("python3 -mwebbrowser " + "./image.html")
     else:
-        print ("Other System tasks")
-    """
-    if os.name == "nt":
-        os.system('start ' + image_file)  # for Windows
-    else:
-        if os.uname()[0] == "Linux":
-            if "deepin" in os.uname()[2]:
-                os.system("deepin-image-viewer " + image_file)  # for deepin
-            else:
-                #os.system("eog " + image_file)  # for Linux
-                #webbrowser.open("http://www.baidu.com")
-                os.system("python3 -mwebbrowser " + "./image.html")
-        else:
-            #os.system("open " + image_file)  # for Mac
-            os.system("python3 -mwebbrowser " + "./image.html")
+        os.system("python3 -mwebbrowser " + "./image.html")
+
 
 def check_login(func):
     """用户登陆态校验装饰器。若用户未登陆，则调用扫码登陆"""
